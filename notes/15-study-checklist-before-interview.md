@@ -276,3 +276,21 @@ What changes when poison-order.json is sent?
 ```
 
 If you can explain both flows clearly, you understand the architecture.
+
+## Best Notes To Read The Day Before
+
+Use this short list when time is limited:
+
+```text
+16-tomorrow-study-plan.md
+17-deep-dive-field-guide.md
+14-production-issues-troubleshooting.md
+09-code-walkthrough.md
+08-github-actions-oidc.md
+```
+
+Why:
+
+```text
+These files connect the architecture, actual code, CI/CD, production failures, and interview-style explanations.
+```

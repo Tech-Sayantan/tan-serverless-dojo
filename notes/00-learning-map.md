@@ -66,6 +66,7 @@ This project is an event-driven serverless pipeline where a producer Lambda publ
 Read in this order:
 
 ```text
+16 tomorrow study plan
 01 architecture
 02 Lambda
 03 SQS
@@ -80,6 +81,9 @@ Read in this order:
 13 reproduce from zero
 14 production issues
 15 study checklist
+17 deep dive field guide
 ```
 
 The goal is not to memorize every AWS property. The goal is to explain the movement of an event through the system and the tradeoffs at each hop.
+
+If you have only one serious study session, start with `16-tomorrow-study-plan.md`. It tells you exactly what to read, what to draw, and what interview answers to practice.

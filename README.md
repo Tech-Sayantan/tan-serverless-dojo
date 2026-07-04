@@ -69,6 +69,8 @@ The `notes/` directory is the main learning material for this repo:
 - `13-reproduce-from-zero.md`: rebuild the lab from scratch
 - `14-production-issues-troubleshooting.md`: production failure modes and fixes
 - `15-study-checklist-before-interview.md`: what to study before interviews
+- `16-tomorrow-study-plan.md`: exact guided reading path for a study session
+- `17-deep-dive-field-guide.md`: concept, code, production, and interview master notes
 
 ## How the app works
 
