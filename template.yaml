@@ -1,0 +1,263 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+Description: Tan Serverless Dojo - Lambda, SQS, SNS, EventBridge, and CloudWatch
+
+Parameters:
+  ProjectName:
+    Type: String
+    Default: tan-serverless-dojo
+    Description: Prefix used for named resources in this stack.
+  ScheduleState:
+    Type: String
+    Default: DISABLED
+    AllowedValues:
+      - ENABLED
+      - DISABLED
+    Description: Keep disabled by default so the demo does not run on a timer unless you choose to enable it.
+  ScheduleExpression:
+    Type: String
+    Default: rate(15 minutes)
+    Description: EventBridge schedule expression for automatic order generation.
+
+Globals:
+  Function:
+    Runtime: python3.12
+    MemorySize: 128
+    Timeout: 10
+    Environment:
+      Variables:
+        LOG_LEVEL: INFO
+
+Resources:
+  OrdersTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      TopicName: !Sub "${ProjectName}-orders-topic"
+
+  OrdersDLQ:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: !Sub "${ProjectName}-orders-dlq"
+      MessageRetentionPeriod: 1209600
+
+  OrdersQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: !Sub "${ProjectName}-orders-queue"
+      VisibilityTimeout: 30
+      ReceiveMessageWaitTimeSeconds: 10
+      RedrivePolicy:
+        deadLetterTargetArn: !GetAtt OrdersDLQ.Arn
+        maxReceiveCount: 3
+
+  OrdersQueuePolicy:
+    Type: AWS::SQS::QueuePolicy
+    Properties:
+      Queues:
+        - !Ref OrdersQueue
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: sns.amazonaws.com
+            Action: sqs:SendMessage
+            Resource: !GetAtt OrdersQueue.Arn
+            Condition:
+              ArnEquals:
+                aws:SourceArn: !Ref OrdersTopic
+
+  HighPriorityAuditQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: !Sub "${ProjectName}-priority-audit-queue"
+      MessageRetentionPeriod: 345600
+
+  HighPriorityAuditQueuePolicy:
+    Type: AWS::SQS::QueuePolicy
+    Properties:
+      Queues:
+        - !Ref HighPriorityAuditQueue
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: sns.amazonaws.com
+            Action: sqs:SendMessage
+            Resource: !GetAtt HighPriorityAuditQueue.Arn
+            Condition:
+              ArnEquals:
+                aws:SourceArn: !Ref OrdersTopic
+
+  OrdersQueueSubscription:
+    Type: AWS::SNS::Subscription
+    Properties:
+      TopicArn: !Ref OrdersTopic
+      Protocol: sqs
+      Endpoint: !GetAtt OrdersQueue.Arn
+      RawMessageDelivery: true
+
+  HighPrioritySubscription:
+    Type: AWS::SNS::Subscription
+    Properties:
+      TopicArn: !Ref OrdersTopic
+      Protocol: sqs
+      Endpoint: !GetAtt HighPriorityAuditQueue.Arn
+      RawMessageDelivery: true
+      FilterPolicy:
+        priority:
+          - HIGH
+
+  OrderIngestFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub "${ProjectName}-order-ingest"
+      CodeUri: src/order_ingest/
+      Handler: app.lambda_handler
+      Policies:
+        - AWSLambdaBasicExecutionRole
+        - Statement:
+            - Effect: Allow
+              Action:
+                - sns:Publish
+              Resource: !Ref OrdersTopic
+      Environment:
+        Variables:
+          ORDERS_TOPIC_ARN: !Ref OrdersTopic
+
+  OrderProcessorFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub "${ProjectName}-order-processor"
+      CodeUri: src/order_processor/
+      Handler: app.lambda_handler
+      Policies:
+        - AWSLambdaBasicExecutionRole
+        - SQSPollerPolicy:
+            QueueName: !GetAtt OrdersQueue.QueueName
+      Events:
+        OrdersQueueEvent:
+          Type: SQS
+          Properties:
+            Queue: !GetAtt OrdersQueue.Arn
+            BatchSize: 1
+
+  OrderScheduleRule:
+    Type: AWS::Events::Rule
+    Properties:
+      Name: !Sub "${ProjectName}-scheduled-orders"
+      Description: Generates sample coffee orders on a schedule.
+      ScheduleExpression: !Ref ScheduleExpression
+      State: !Ref ScheduleState
+      Targets:
+        - Arn: !GetAtt OrderIngestFunction.Arn
+          Id: OrderIngestTarget
+          Input: '{"source":"eventbridge","channel":"scheduled"}'
+
+  OrderSchedulePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref OrderIngestFunction
+      Action: lambda:InvokeFunction
+      Principal: events.amazonaws.com
+      SourceArn: !GetAtt OrderScheduleRule.Arn
+
+  OrderIngestLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub "/aws/lambda/${OrderIngestFunction}"
+      RetentionInDays: 7
+
+  OrderProcessorLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub "/aws/lambda/${OrderProcessorFunction}"
+      RetentionInDays: 7
+
+  OrdersDlqVisibleAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub "${ProjectName}-orders-dlq-visible"
+      AlarmDescription: Alerts when failed orders land in the dead-letter queue.
+      Namespace: AWS/SQS
+      MetricName: ApproximateNumberOfMessagesVisible
+      Dimensions:
+        - Name: QueueName
+          Value: !GetAtt OrdersDLQ.QueueName
+      Statistic: Maximum
+      Period: 60
+      EvaluationPeriods: 1
+      Threshold: 0
+      ComparisonOperator: GreaterThanThreshold
+      TreatMissingData: notBreaching
+
+  ServerlessDashboard:
+    Type: AWS::CloudWatch::Dashboard
+    Properties:
+      DashboardName: !Sub "${ProjectName}-dashboard"
+      DashboardBody: !Sub |
+        {
+          "widgets": [
+            {
+              "type": "metric",
+              "x": 0,
+              "y": 0,
+              "width": 12,
+              "height": 6,
+              "properties": {
+                "title": "Lambda Invocations and Errors",
+                "view": "timeSeries",
+                "stacked": false,
+                "region": "${AWS::Region}",
+                "metrics": [
+                  [ "AWS/Lambda", "Invocations", "FunctionName", "${OrderIngestFunction}" ],
+                  [ ".", "Errors", ".", "." ],
+                  [ "AWS/Lambda", "Invocations", "FunctionName", "${OrderProcessorFunction}" ],
+                  [ ".", "Errors", ".", "." ]
+                ]
+              }
+            },
+            {
+              "type": "metric",
+              "x": 12,
+              "y": 0,
+              "width": 12,
+              "height": 6,
+              "properties": {
+                "title": "Queue Depth",
+                "view": "timeSeries",
+                "stacked": false,
+                "region": "${AWS::Region}",
+                "metrics": [
+                  [ "AWS/SQS", "ApproximateNumberOfMessagesVisible", "QueueName", "${OrdersQueue.QueueName}" ],
+                  [ ".", "ApproximateNumberOfMessagesVisible", "QueueName", "${OrdersDLQ.QueueName}" ],
+                  [ ".", "ApproximateNumberOfMessagesVisible", "QueueName", "${HighPriorityAuditQueue.QueueName}" ]
+                ]
+              }
+            }
+          ]
+        }
+
+Outputs:
+  OrderIngestFunctionName:
+    Description: Lambda that creates sample orders and publishes them to SNS.
+    Value: !Ref OrderIngestFunction
+  OrderProcessorFunctionName:
+    Description: Lambda that consumes orders from SQS.
+    Value: !Ref OrderProcessorFunction
+  OrdersTopicArn:
+    Description: SNS topic that fans out order notifications.
+    Value: !Ref OrdersTopic
+  OrdersQueueUrl:
+    Description: Main processing queue for coffee orders.
+    Value: !Ref OrdersQueue
+  OrdersDlqUrl:
+    Description: Dead-letter queue for failed coffee orders.
+    Value: !Ref OrdersDLQ
+  HighPriorityAuditQueueUrl:
+    Description: Queue that receives only HIGH priority orders via SNS filter policy.
+    Value: !Ref HighPriorityAuditQueue
+  DashboardName:
+    Description: CloudWatch dashboard name.
+    Value: !Ref ServerlessDashboard

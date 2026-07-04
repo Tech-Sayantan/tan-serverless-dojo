@@ -1,0 +1,57 @@
+name: Deploy serverless stack
+
+on:
+  workflow_dispatch:
+    inputs:
+      schedule_state:
+        description: Enable the EventBridge schedule
+        required: true
+        default: DISABLED
+        type: choice
+        options:
+          - DISABLED
+          - ENABLED
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    env:
+      AWS_REGION: us-east-1
+      STACK_NAME: tan-serverless-dojo
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Set up AWS SAM
+        uses: aws-actions/setup-sam@v2
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Validate SAM template
+        run: sam validate --lint
+
+      - name: Build application
+        run: sam build
+
+      - name: Deploy stack
+        run: >
+          sam deploy
+          --stack-name "${STACK_NAME}"
+          --region "${AWS_REGION}"
+          --no-confirm-changeset
+          --no-fail-on-empty-changeset
+          --capabilities CAPABILITY_IAM
+          --parameter-overrides ScheduleState=${{ inputs.schedule_state }}
