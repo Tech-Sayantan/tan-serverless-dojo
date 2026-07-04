@@ -11,6 +11,11 @@ on:
         options:
           - DISABLED
           - ENABLED
+      notification_email:
+        description: Email address for DLQ alarm notifications
+        required: true
+        default: sayantan.chowdhury.tech@gmail.com
+        type: string
 
 permissions:
   id-token: write
@@ -56,4 +61,6 @@ jobs:
           --no-confirm-changeset
           --no-fail-on-empty-changeset
           --capabilities CAPABILITY_IAM
-          --parameter-overrides ScheduleState=${{ inputs.schedule_state }}
+          --parameter-overrides
+          ScheduleState=${{ inputs.schedule_state }}
+          NotificationEmail=${{ inputs.notification_email }}

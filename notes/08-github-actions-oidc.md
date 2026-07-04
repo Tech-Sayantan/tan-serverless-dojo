@@ -23,6 +23,17 @@ checkout repo
   -> sam deploy
 ```
 
+The deploy workflow asks for two manual inputs:
+
+```yaml
+schedule_state
+notification_email
+```
+
+`schedule_state` controls whether EventBridge automatically generates orders.
+
+`notification_email` is passed to CloudFormation so the DLQ alarm subscription can email the right address.
+
 The destroy job does:
 
 ```text

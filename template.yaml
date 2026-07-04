@@ -18,6 +18,10 @@ Parameters:
     Type: String
     Default: rate(15 minutes)
     Description: EventBridge schedule expression for automatic order generation.
+  NotificationEmail:
+    Type: String
+    Default: sayantan.chowdhury.tech@gmail.com
+    Description: Email address subscribed to operational alarm notifications.
 
 Globals:
   Function:
@@ -33,6 +37,18 @@ Resources:
     Type: AWS::SNS::Topic
     Properties:
       TopicName: !Sub "${ProjectName}-orders-topic"
+
+  AlarmNotificationTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      TopicName: !Sub "${ProjectName}-alarm-notifications"
+
+  AlarmEmailSubscription:
+    Type: AWS::SNS::Subscription
+    Properties:
+      TopicArn: !Ref AlarmNotificationTopic
+      Protocol: email
+      Endpoint: !Ref NotificationEmail
 
   OrdersDLQ:
     Type: AWS::SQS::Queue
@@ -191,6 +207,10 @@ Resources:
       Threshold: 0
       ComparisonOperator: GreaterThanThreshold
       TreatMissingData: notBreaching
+      AlarmActions:
+        - !Ref AlarmNotificationTopic
+      OKActions:
+        - !Ref AlarmNotificationTopic
 
   ServerlessDashboard:
     Type: AWS::CloudWatch::Dashboard
@@ -249,6 +269,9 @@ Outputs:
   OrdersTopicArn:
     Description: SNS topic that fans out order notifications.
     Value: !Ref OrdersTopic
+  AlarmNotificationTopicArn:
+    Description: SNS topic used by CloudWatch alarm email notifications.
+    Value: !Ref AlarmNotificationTopic
   OrdersQueueUrl:
     Description: Main processing queue for coffee orders.
     Value: !Ref OrdersQueue

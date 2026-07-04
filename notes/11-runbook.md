@@ -19,8 +19,27 @@ Find:
 - `OrdersQueueUrl`
 - `OrdersDlqUrl`
 - `HighPriorityAuditQueueUrl`
+- `AlarmNotificationTopicArn`
 
-## 2. Happy Path
+## 2. Confirm Email Subscription
+
+After deploy, AWS sends a confirmation email to:
+
+```text
+sayantan.chowdhury.tech@gmail.com
+```
+
+Open the email and click `Confirm subscription`.
+
+Why:
+
+```text
+CloudWatch alarm -> SNS topic -> email subscription
+```
+
+The SNS topic cannot email you until the subscription is confirmed.
+
+## 3. Happy Path
 
 Invoke the producer:
 
@@ -45,7 +64,7 @@ OrderProcessor succeeds
 message disappears from main queue
 ```
 
-## 3. Check Logs
+## 4. Check Logs
 
 Producer logs:
 
@@ -65,7 +84,7 @@ aws logs tail /aws/lambda/tan-serverless-dojo-order-processor \
   --region us-east-1
 ```
 
-## 4. Check High Priority Fanout
+## 5. Check High Priority Fanout
 
 Receive from `HighPriorityAuditQueueUrl`:
 
@@ -86,7 +105,7 @@ Because `manual-order.json` has:
 
 the audit queue should receive a copy.
 
-## 5. Poison Message Path
+## 6. Poison Message Path
 
 Invoke the producer with an invalid quantity:
 
@@ -111,9 +130,26 @@ Lambda fails
 SQS retries
 after maxReceiveCount = 3, message moves to DLQ
 CloudWatch alarm can enter ALARM
+SNS can send email notification
 ```
 
-## 6. Cleanup
+The email can take a few minutes because the message must fail, retry, move to DLQ, and then CloudWatch must evaluate the SQS metric.
+
+## 7. Watch The Alarm
+
+Check alarm state:
+
+```bash
+aws cloudwatch describe-alarms \
+  --alarm-names tan-serverless-dojo-orders-dlq-visible \
+  --profile serverless-lab \
+  --region us-east-1 \
+  --query "MetricAlarms[0].StateValue"
+```
+
+When it becomes `ALARM`, the confirmed email subscription should receive a notification.
+
+## 8. Cleanup
 
 From local machine:
 

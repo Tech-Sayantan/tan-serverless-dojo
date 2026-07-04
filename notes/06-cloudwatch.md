@@ -102,6 +102,36 @@ if DLQ has more than 0 visible messages, alarm
 
 That is a production-minded signal. A DLQ message means something failed repeatedly and needs investigation.
 
+## Email Notification
+
+The alarm publishes to an SNS notification topic:
+
+```yaml
+AlarmNotificationTopic:
+  Type: AWS::SNS::Topic
+```
+
+The email subscription is:
+
+```yaml
+AlarmEmailSubscription:
+  Type: AWS::SNS::Subscription
+  Properties:
+    Protocol: email
+    Endpoint: !Ref NotificationEmail
+```
+
+CloudWatch does not email people directly in this design. The chain is:
+
+```text
+DLQ has visible messages
+  -> CloudWatch alarm changes state
+  -> alarm publishes to SNS topic
+  -> SNS emails the subscribed address
+```
+
+Important: email subscriptions require confirmation. After deploy, AWS sends a confirmation email. Until the recipient clicks confirm, SNS will not deliver alarm emails.
+
 ## Dashboard
 
 This repo also creates a dashboard with:

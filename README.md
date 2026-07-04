@@ -22,7 +22,8 @@ SNS also fans out HIGH priority orders
 - SNS: fanout topic for order notifications
 - SQS: main queue, audit queue, and dead-letter queue
 - EventBridge: scheduled rule to generate sample orders
-- CloudWatch: logs, dashboard, and alarm
+- CloudWatch: logs, dashboard, and DLQ alarm
+- SNS email notification: CloudWatch alarm emails `sayantan.chowdhury.tech@gmail.com`
 - SAM and CloudFormation: infrastructure as code and repeatable deployment
 
 ## Project structure
@@ -125,6 +126,7 @@ Handles:
 - Lambda logs from `print(...)`
 - a dashboard for Lambda and queue metrics
 - an alarm when the DLQ has visible messages
+- email notification through an SNS subscription
 
 ## Local workflow
 
@@ -160,6 +162,8 @@ SAM configuration environment: default
 ```
 
 Note: the EventBridge schedule is parameterized and defaults to `DISABLED`.
+
+When the stack creates or updates the email subscription, AWS sends a confirmation email. Open the email sent to `sayantan.chowdhury.tech@gmail.com` and click `Confirm subscription`; otherwise CloudWatch can publish to SNS but SNS will not deliver email.
 
 ## Test commands
 
@@ -223,6 +227,11 @@ The workflows are intentionally manual so nothing deploys unexpectedly when you 
 
 - `.github/workflows/deploy.yml`: manual deploy with optional schedule enablement
 - `.github/workflows/destroy.yml`: manual stack teardown
+
+The deploy workflow has two manual inputs:
+
+- `schedule_state`: keep `DISABLED` while testing manually
+- `notification_email`: defaults to `sayantan.chowdhury.tech@gmail.com`
 
 GitHub Actions authenticates to AWS through OIDC, so the repo does not need long-lived AWS access key secrets.
 

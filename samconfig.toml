@@ -7,7 +7,7 @@ s3_prefix = "tan-serverless-dojo"
 region = "us-east-1"
 confirm_changeset = true
 capabilities = "CAPABILITY_IAM"
-parameter_overrides = "ProjectName=\"tan-serverless-dojo\" ScheduleState=\"DISABLED\" ScheduleExpression=\"rate(15 minutes)\""
+parameter_overrides = "ProjectName=\"tan-serverless-dojo\" ScheduleState=\"DISABLED\" ScheduleExpression=\"rate(15 minutes)\" NotificationEmail=\"sayantan.chowdhury.tech@gmail.com\""
 image_repositories = []
 
 [default.global.parameters]

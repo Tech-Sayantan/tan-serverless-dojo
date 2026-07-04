@@ -2,7 +2,7 @@
 
 ## Core Explanation
 
-I built a serverless event-driven pipeline using AWS SAM. A producer Lambda creates order events and publishes them to SNS. SNS fans out events to SQS queues. A worker Lambda consumes from SQS asynchronously. Failed messages retry and eventually go to a DLQ. CloudWatch captures logs, metrics, a dashboard, and a DLQ alarm. GitHub Actions deploys the stack using OIDC, so no long-lived AWS keys are stored in GitHub.
+I built a serverless event-driven pipeline using AWS SAM. A producer Lambda creates order events and publishes them to SNS. SNS fans out events to SQS queues. A worker Lambda consumes from SQS asynchronously. Failed messages retry and eventually go to a DLQ. CloudWatch captures logs, metrics, a dashboard, and a DLQ alarm that publishes to SNS for email notification. GitHub Actions deploys the stack using OIDC, so no long-lived AWS keys are stored in GitHub.
 
 ## Questions You Should Expect
 
@@ -37,6 +37,10 @@ EventBridge can route events or invoke targets on a schedule. In this repo it re
 ### Why CloudWatch?
 
 CloudWatch provides logs, metrics, dashboards, and alarms. It is necessary to debug Lambda execution, monitor queue depth, and detect DLQ failures.
+
+### How does email notification work?
+
+CloudWatch alarm actions publish to an SNS topic. The SNS topic has an email subscription. When the alarm changes state, CloudWatch publishes to SNS and SNS sends the email. The email address must confirm the subscription first.
 
 ### Why OIDC for GitHub Actions?
 
