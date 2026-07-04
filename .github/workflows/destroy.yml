@@ -4,6 +4,7 @@ on:
   workflow_dispatch:
 
 permissions:
+  id-token: write
   contents: read
 
 jobs:
@@ -12,6 +13,7 @@ jobs:
     env:
       AWS_REGION: us-east-1
       STACK_NAME: tan-serverless-dojo
+      AWS_ROLE_TO_ASSUME: arn:aws:iam::923988301700:role/tan-serverless-github-actions-role
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
@@ -22,8 +24,8 @@ jobs:
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          role-to-assume: ${{ env.AWS_ROLE_TO_ASSUME }}
+          role-session-name: github-actions-destroy
           aws-region: ${{ env.AWS_REGION }}
 
       - name: Delete stack

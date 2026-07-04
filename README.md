@@ -202,11 +202,18 @@ The workflows are intentionally manual so nothing deploys unexpectedly when you 
 - `.github/workflows/deploy.yml`: manual deploy with optional schedule enablement
 - `.github/workflows/destroy.yml`: manual stack teardown
 
-Required GitHub secrets before running Actions:
+GitHub Actions authenticates to AWS through OIDC, so the repo does not need long-lived AWS access key secrets.
+
+Required AWS role:
 
 ```text
-AWS_ACCESS_KEY_ID
-AWS_SECRET_ACCESS_KEY
+arn:aws:iam::923988301700:role/tan-serverless-github-actions-role
+```
+
+That role trusts only this repo on the `main` branch:
+
+```text
+repo:Tech-Sayantan/tan-serverless-dojo:ref:refs/heads/main
 ```
 
 ## Cleanup
