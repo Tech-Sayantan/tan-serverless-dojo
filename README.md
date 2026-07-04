@@ -42,7 +42,29 @@ tan-serverless-dojo/
   README.md
   samconfig.toml
   template.yaml
+  notes/
+    00-learning-map.md
+    01-architecture-use-case.md
+    ...
 ```
+
+## Study notes
+
+The `notes/` directory is the main learning material for this repo:
+
+- `00-learning-map.md`: what to learn and how the services connect
+- `01-architecture-use-case.md`: the use case and automotive mapping
+- `02-lambda.md`: Lambda concepts
+- `03-sqs.md`: queueing, retry, visibility timeout, DLQ
+- `04-sns.md`: pub/sub fanout and filter policies
+- `05-eventbridge.md`: scheduler and Lambda permissions
+- `06-cloudwatch.md`: logs, metrics, dashboard, alarms
+- `07-sam-cloudformation.md`: infrastructure as code flow
+- `08-github-actions-oidc.md`: pipeline and AWS auth
+- `09-code-walkthrough.md`: Python code explanation
+- `10-interview-prep.md`: interview answers and talking points
+- `11-runbook.md`: commands to test and clean up
+- `12-next-labs.md`: what to build next
 
 ## How the app works
 
