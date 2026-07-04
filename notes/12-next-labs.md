@@ -131,6 +131,67 @@ Interview concept:
 DLQ is an operational workflow, not a trash can.
 ```
 
+## Lab 8: API Gateway Entry Point
+
+Problem:
+
+Manual Lambda invoke is not how users call production systems.
+
+Upgrade:
+
+Add API Gateway in front of `OrderIngestFunction`.
+
+Interview concept:
+
+```text
+API Gateway handles HTTP, Lambda handles compute, SNS/SQS handles async backend processing.
+```
+
+## Lab 9: Vehicle Telemetry Domain Version
+
+Problem:
+
+Coffee orders are good for learning, but MBRDI interview discussion should use automotive language.
+
+Upgrade:
+
+Rename event examples:
+
+```text
+order.created -> vehicle.telemetry.received
+item -> vin or signalType
+quantity -> mileage or batteryPercentage
+priority -> severity
+```
+
+Interview concept:
+
+```text
+Architecture patterns transfer across domains; only event schema and business rules change.
+```
+
+## Lab 10: Observability Upgrade
+
+Problem:
+
+Logs alone are not enough for production incident response.
+
+Upgrade:
+
+Add:
+
+- correlation ID
+- custom CloudWatch metric
+- alarm on Lambda errors
+- alarm on queue age
+- dashboard widget for DLQ age
+
+Interview concept:
+
+```text
+Monitor symptoms users feel, not just whether code threw exceptions.
+```
+
 ## Suggested Next Session
 
 Start with Lab 1: idempotency using DynamoDB.

@@ -66,6 +66,9 @@ The `notes/` directory is the main learning material for this repo:
 - `10-interview-prep.md`: interview answers and talking points
 - `11-runbook.md`: commands to test and clean up
 - `12-next-labs.md`: what to build next
+- `13-reproduce-from-zero.md`: rebuild the lab from scratch
+- `14-production-issues-troubleshooting.md`: production failure modes and fixes
+- `15-study-checklist-before-interview.md`: what to study before interviews
 
 ## How the app works
 

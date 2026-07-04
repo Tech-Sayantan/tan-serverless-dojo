@@ -60,3 +60,26 @@ After practicing this repo, you should be able to explain:
 ## Interview One-Liner
 
 This project is an event-driven serverless pipeline where a producer Lambda publishes domain events to SNS, SNS fans those events into SQS queues, worker Lambdas process asynchronously, EventBridge can generate scheduled events, and CloudWatch provides logs, dashboards, and alarms.
+
+## How To Use These Notes
+
+Read in this order:
+
+```text
+01 architecture
+02 Lambda
+03 SQS
+04 SNS
+05 EventBridge
+06 CloudWatch
+07 SAM/CloudFormation
+08 GitHub Actions/OIDC
+09 code walkthrough
+10 interview prep
+11 runbook
+13 reproduce from zero
+14 production issues
+15 study checklist
+```
+
+The goal is not to memorize every AWS property. The goal is to explain the movement of an event through the system and the tradeoffs at each hop.
