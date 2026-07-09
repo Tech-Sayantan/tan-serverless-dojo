@@ -2,6 +2,8 @@
 
 This repo is a small but realistic serverless practice project built for interview prep. It keeps the full workflow in git: Lambda code, infrastructure as code, test events, and GitHub Actions deploy and destroy pipelines.
 
+Documentation site: https://tech-sayantan.github.io/tan-serverless-dojo/
+
 ## Architecture
 
 ```text

@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Tan Serverless Dojo</title>
+    <meta name="description" content="A production-minded serverless lab for Lambda, SNS, SQS, EventBridge, CloudWatch, SAM, and GitHub Actions.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <header class="site-header">
+      <a class="brand" href="index.html" aria-label="Tan Serverless Dojo home">
+        <span class="brand-mark">SD</span>
+        <span>Tan Serverless Dojo</span>
+      </a>
+      <nav class="nav-links" aria-label="Primary navigation">
+        <a href="https://github.com/Tech-Sayantan/tan-serverless-dojo">Repository</a>
+        <a href="https://github.com/Tech-Sayantan/tan-serverless-dojo/tree/main/notes">Study Notes</a>
+        <a href="https://github.com/Tech-Sayantan/tan-serverless-dojo/blob/main/notes/11-runbook.md">Runbook</a>
+      </nav>
+    </header>
+
+    <main>
+      <section class="hero">
+        <div class="hero-copy">
+          <p class="eyebrow">Serverless event lab</p>
+          <h1>Build the event-driven AWS story interviewers actually ask about.</h1>
+          <p>
+            Lambda, SNS, SQS, EventBridge, CloudWatch, SAM, and GitHub Actions arranged as a small but realistic
+            order-processing system with retries, fanout, alarms, and a dead-letter queue.
+          </p>
+          <div class="hero-actions">
+            <a class="button primary" href="https://github.com/Tech-Sayantan/tan-serverless-dojo/blob/main/notes/00-learning-map.md">Open Learning Map</a>
+            <a class="button secondary" href="https://github.com/Tech-Sayantan/tan-serverless-dojo/blob/main/template.yaml">View SAM Template</a>
+          </div>
+        </div>
+
+        <div class="event-board" aria-label="Serverless architecture visual">
+          <div class="board-header">
+            <span>event-pipeline</span>
+            <strong>healthy</strong>
+          </div>
+          <svg class="pipeline" viewBox="0 0 740 420" role="img" aria-label="Lambda SNS SQS serverless pipeline">
+            <defs>
+              <linearGradient id="pipelineLine" x1="0" x2="1" y1="0" y2="0">
+                <stop offset="0%" stop-color="#ffb703"/>
+                <stop offset="45%" stop-color="#00a896"/>
+                <stop offset="100%" stop-color="#ef476f"/>
+              </linearGradient>
+            </defs>
+            <path d="M90 115 H268 C300 115 300 206 332 206 H500" class="line"/>
+            <path d="M90 115 H268 C300 115 300 305 332 305 H500" class="line muted-line"/>
+            <path d="M585 206 H655 V305 H585" class="line muted-line"/>
+            <g class="node source"><rect x="34" y="78" width="112" height="74" rx="8"/><text x="90" y="109">Manual</text><text x="90" y="130">EventBridge</text></g>
+            <g class="node lambda"><rect x="228" y="78" width="126" height="74" rx="8"/><text x="291" y="109">OrderIngest</text><text x="291" y="130">Lambda</text></g>
+            <g class="node sns"><rect x="362" y="169" width="126" height="74" rx="8"/><text x="425" y="200">SNS Topic</text><text x="425" y="221">Fanout</text></g>
+            <g class="node sqs"><rect x="530" y="169" width="126" height="74" rx="8"/><text x="593" y="200">OrdersQueue</text><text x="593" y="221">SQS</text></g>
+            <g class="node audit"><rect x="530" y="268" width="126" height="74" rx="8"/><text x="593" y="299">HighPriority</text><text x="593" y="320">AuditQueue</text></g>
+            <g class="node lambda"><rect x="530" y="70" width="126" height="74" rx="8"/><text x="593" y="101">Processor</text><text x="593" y="122">Lambda</text></g>
+            <path d="M593 169 V144" class="line vertical"/>
+            <g class="node dlq"><rect x="220" y="287" width="126" height="74" rx="8"/><text x="283" y="318">DLQ Alarm</text><text x="283" y="339">CloudWatch</text></g>
+          </svg>
+        </div>
+      </section>
+
+      <section class="metrics">
+        <article><strong>7</strong><span>AWS services</span></article>
+        <article><strong>17</strong><span>study notes</span></article>
+        <article><strong>2</strong><span>Lambda functions</span></article>
+        <article><strong>1</strong><span>deployable SAM stack</span></article>
+      </section>
+
+      <section class="section">
+        <div class="section-heading">
+          <p class="eyebrow">What you learn</p>
+          <h2>Serverless concepts with production texture.</h2>
+        </div>
+        <div class="feature-grid">
+          <article>
+            <span>01</span>
+            <h3>Async processing</h3>
+            <p>Understand how SQS decouples the producer from the worker and controls retry behavior.</p>
+          </article>
+          <article>
+            <span>02</span>
+            <h3>Fanout and filtering</h3>
+            <p>Use SNS to publish once and route messages to multiple queues based on attributes.</p>
+          </article>
+          <article>
+            <span>03</span>
+            <h3>Failure handling</h3>
+            <p>Trigger poison-message behavior, observe retries, and explain the role of the DLQ.</p>
+          </article>
+          <article>
+            <span>04</span>
+            <h3>Observability</h3>
+            <p>Use logs, metrics, dashboards, and alarms to prove what the system is doing.</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="section split">
+        <div>
+          <p class="eyebrow">Interview angle</p>
+          <h2>A small system that opens big AWS conversations.</h2>
+          <p>
+            This repo gives you concrete examples for event-driven architecture, retries, DLQs, IAM permissions,
+            infrastructure as code, CI/CD, and operational troubleshooting.
+          </p>
+        </div>
+        <div class="runbook">
+          <a href="https://github.com/Tech-Sayantan/tan-serverless-dojo/blob/main/notes/01-architecture-use-case.md">
+            <strong>Architecture use case</strong>
+            <span>Business flow and service mapping</span>
+          </a>
+          <a href="https://github.com/Tech-Sayantan/tan-serverless-dojo/blob/main/notes/14-production-issues-troubleshooting.md">
+            <strong>Production troubleshooting</strong>
+            <span>Failure modes and fixes</span>
+          </a>
+          <a href="https://github.com/Tech-Sayantan/tan-serverless-dojo/blob/main/notes/10-interview-prep.md">
+            <strong>Interview prep</strong>
+            <span>Speakable answers and talking points</span>
+          </a>
+        </div>
+      </section>
+    </main>
+  </body>
+</html>
+
